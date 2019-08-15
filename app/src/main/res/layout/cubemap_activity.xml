@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#000">
+
+        <ImageView
+            android:id="@+id/topImageView"
+            android:layout_width="125dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="150dp"
+            android:layout_marginStart="150dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="#FFF"/>
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#000">
+
+        <ImageView
+            android:id="@+id/leftImageView"
+            android:layout_width="125dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="25dp"
+            android:layout_marginStart="25dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="#FFF" />
+
+        <ImageView
+            android:id="@+id/frontImageView"
+            android:layout_width="125dp"
+            android:layout_height="match_parent"
+            app:layout_constraintStart_toEndOf="@+id/leftImageView"
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="#FFF" />
+
+        <ImageView
+            android:id="@+id/rightImageView"
+            android:layout_width="125dp"
+            android:layout_height="match_parent"
+            app:layout_constraintStart_toEndOf="@+id/frontImageView"
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="#FFF" />
+
+        <ImageView
+            android:id="@+id/backImageView"
+            android:layout_width="125dp"
+            android:layout_height="match_parent"
+            android:background="#FFF"
+            app:layout_constraintStart_toEndOf="@+id/rightImageView"
+            app:layout_constraintTop_toTopOf="parent" />
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#000">
+
+        <ImageView
+            android:id="@+id/bottomImageView"
+            android:layout_width="125dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="150dp"
+            android:layout_marginStart="150dp"
+            android:background="#FFF"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </android.support.constraint.ConstraintLayout>
+</LinearLayout>
