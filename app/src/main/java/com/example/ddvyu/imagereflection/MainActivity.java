@@ -6,11 +6,10 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 
 public class MainActivity extends AppCompatActivity {
@@ -18,6 +17,10 @@ public class MainActivity extends AppCompatActivity {
     Camera camera = null;
     FrameLayout frameLayout;
     ShowCamera showCamera;
+    Button takePictureButton;
+    Button clearButton;
+    Button renderButton;
+
     private static final int REQUEST_CAMERA_PERMISSION = 200;
     private boolean permissionGranted = false;
     private int faces[] = {R.id.leftImageView,R.id.frontImageView,
@@ -34,18 +37,40 @@ public class MainActivity extends AppCompatActivity {
 
         if(permissionGranted){
             showPreview();
-            currentFace++;
         }
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showPreview();
-                currentFace++;
-            }
-        });
+        takePictureButton = findViewById(R.id.takePictureButton);
+        takePictureButton.setOnClickListener(takePictureListener);
+
+        renderButton = findViewById(R.id.renderButton);
+        renderButton.setOnClickListener(renderButtonListener);
+
+        clearButton = findViewById(R.id.clearButton);
+        clearButton.setOnClickListener(clearButtonListener);
     }
+
+    View.OnClickListener takePictureListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            showPreview();
+        }
+    };
+
+    View.OnClickListener renderButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            startRenderActivity();
+        }
+    };
+
+
+    View.OnClickListener clearButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            clearPreviews();
+        }
+    };
+
 
     public void showPreview(){
         if(currentFace >= faces.length){
@@ -57,8 +82,23 @@ public class MainActivity extends AppCompatActivity {
             camera.release();
         }
         camera = Camera.open();
+        showCamera = null;
         showCamera = new ShowCamera(frameLayout.getContext(),camera);
         frameLayout.addView(showCamera);
+        currentFace++;
+    }
+
+    public void clearPreviews(){
+        for(int i=0;i<faces.length;i++){
+            frameLayout = findViewById(faces[i]);
+            frameLayout.removeAllViews();
+        }
+        currentFace = 0;
+        showPreview();
+    }
+
+    public void startRenderActivity(){
+
     }
 
     public boolean isCameraInUse() {
@@ -88,7 +128,6 @@ public class MainActivity extends AppCompatActivity {
                 if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     permissionGranted = true;
                     showPreview();
-                    currentFace++;
                 }
                 else{
                     finish();

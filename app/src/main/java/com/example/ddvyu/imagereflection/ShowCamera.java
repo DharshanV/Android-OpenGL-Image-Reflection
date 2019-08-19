@@ -11,6 +11,7 @@ import java.io.IOException;
 public class ShowCamera extends SurfaceView implements SurfaceHolder.Callback {
     Camera camera;
     SurfaceHolder holder;
+
     public ShowCamera(Context context,Camera camera){
         super(context);
         this.camera = camera;
