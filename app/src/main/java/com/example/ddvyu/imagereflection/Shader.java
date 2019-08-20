@@ -10,23 +10,22 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class Shader extends Application {
     private static String TAG = "Shader";
     private int programID;
-    private static Context context;
 
-    public Shader(final String vertexPath,final String fragmentPath){
-        listAssetFiles("");
+    public Shader(AssetManager assets,final String vertexPath,final String fragmentPath){
         try{
-            String[] vertexCode = Resources.getSystem().getAssets().getLocales();
-            Log.i(TAG,vertexCode[0]);
-            String fragmentCode = Resources.getSystem().getAssets().open(fragmentPath).toString();
-//            int vertex = loadShader(GLES30.GL_VERTEX_SHADER,vertexCode);
-//            int fragment = loadShader(GLES30.GL_FRAGMENT_SHADER,fragmentCode);
-//            programID = loadProgram(vertex,fragment);
+            String vertexCode = getCode(assets.open(vertexPath));
+            String fragmentCode = getCode(assets.open(fragmentPath));
+            int vertex = loadShader(GLES30.GL_VERTEX_SHADER,vertexCode);
+            int fragment = loadShader(GLES30.GL_FRAGMENT_SHADER,fragmentCode);
+            programID = loadProgram(vertex,fragment);
         }catch (IOException e){
             e.printStackTrace();
         }
@@ -35,50 +34,20 @@ public class Shader extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        context = getApplicationContext();
-    }
-
-    private boolean listAssetFiles(String path) {
-
-        String [] list;
-        try {
-            list = getAssets().list(path);
-            if (list.length > 0) {
-                for (String file : list) {
-                    if (!listAssetFiles(path + "/" + file))
-                        return false;
-                    else {
-                        Log.i("Main",file);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            return false;
-        }
-
-        return true;
     }
 
     public void use(){
         GLES30.glUseProgram(programID);
     }
 
-    @NonNull
-    private String getCode(final String path) throws IOException{
-        BufferedReader br = new BufferedReader(new FileReader(path));
-        try {
-            StringBuilder sb = new StringBuilder();
-            String line = br.readLine();
-
-            while (line != null) {
-                sb.append(line);
-                sb.append("\n");
-                line = br.readLine();
-            }
-            return sb.toString();
-        } finally {
-            br.close();
+    public static String getCode(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream into = new ByteArrayOutputStream();
+        byte[] buf = new byte[4096];
+        for (int n; 0 < (n = inputStream.read(buf));) {
+            into.write(buf, 0, n);
         }
+        into.close();
+        return new String(into.toByteArray(), "UTF-8"); // Or whatever encoding
     }
 
     private int loadShader(int type,String source){

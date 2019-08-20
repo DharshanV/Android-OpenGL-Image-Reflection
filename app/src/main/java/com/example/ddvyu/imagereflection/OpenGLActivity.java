@@ -18,6 +18,7 @@ public class OpenGLActivity extends Activity {
         setContentView(R.layout.opengl_activity);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         glSurfaceView = findViewById(R.id.openGLSurfaceView);
+        glSurfaceView.setAssetManager(getAssets());
     }
 
     @Override
