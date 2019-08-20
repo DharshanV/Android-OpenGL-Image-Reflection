@@ -1,23 +1,18 @@
 package com.example.ddvyu.imagereflection;
 
 import android.app.Application;
-import android.content.Context;
 import android.content.res.AssetManager;
-import android.content.res.Resources;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
-import android.support.annotation.NonNull;
 import android.util.Log;
-
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.FloatBuffer;
 
 public class Shader extends Application {
     private static String TAG = "Shader";
-    private int programID;
+    public int programID;
 
     public Shader(AssetManager assets,final String vertexPath,final String fragmentPath){
         try{
@@ -48,6 +43,14 @@ public class Shader extends Application {
         }
         into.close();
         return new String(into.toByteArray(), "UTF-8"); // Or whatever encoding
+    }
+
+    public void setMatrix4f(String name,float[] matrix){
+        GLES30.glUniformMatrix4fv(GLES30.glGetUniformLocation(programID,name),1,false,matrix,0);
+    }
+
+    public void setInt(String name,float value){
+        GLES30.glUniform1f(GLES30.glGetUniformLocation(programID,name),value);
     }
 
     private int loadShader(int type,String source){
