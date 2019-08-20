@@ -2,6 +2,8 @@ package com.example.ddvyu.imagereflection;
 
 import android.app.Application;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
 import android.util.Log;
@@ -37,7 +39,7 @@ public class Shader extends Application {
 
     public static String getCode(InputStream inputStream) throws IOException {
         ByteArrayOutputStream into = new ByteArrayOutputStream();
-        byte[] buf = new byte[4096];
+        byte[] buf = new byte[100];
         for (int n; 0 < (n = inputStream.read(buf));) {
             into.write(buf, 0, n);
         }
