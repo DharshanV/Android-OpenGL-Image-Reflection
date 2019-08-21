@@ -2,12 +2,11 @@ package com.example.ddvyu.imagereflection;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
-
-import java.io.IOException;
+import android.view.View;
+import android.widget.Button;
 
 public class OpenGLActivity extends Activity {
     private OpenGLSurfaceView glSurfaceView;
@@ -19,7 +18,26 @@ public class OpenGLActivity extends Activity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         glSurfaceView = findViewById(R.id.openGLSurfaceView);
         glSurfaceView.setAssetManager(getAssets());
+        
+        findViewById(R.id.forwardButton).setOnClickListener(eventListener);
+        findViewById(R.id.backwardButton).setOnClickListener(eventListener);
     }
+    
+    View.OnClickListener eventListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.forwardButton:{
+                    glSurfaceView.executeMovement(Movement.FORWARD);
+                    break;
+                }
+                case R.id.backwardButton:{
+                    glSurfaceView.executeMovement(Movement.BACKWARD);
+                    break;
+                }
+            }
+        }
+    };
 
     @Override
     protected void onResume(){
