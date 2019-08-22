@@ -13,6 +13,6 @@ void main()
 {
     vec3 I = normalize(Position - cameraPos);
     vec3 R = reflect(I, normalize(Normal));
-    //FragColor = vec4(texture(skybox, R).rgb, 1.0);
-    FragColor = texture(texture1,texCoords);
+    FragColor = vec4(texture(skybox, R).rgb, 1.0);
+    //FragColor = texture(texture1,texCoords);
 }

@@ -28,6 +28,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     private static final String TAG = "GLRenderer";
     private AssetManager assets;
 
+    private Camera camera;
     private Shader shader;
     private Texture texture;
     private Shader skyboxShader;
@@ -64,6 +65,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         GLES30.glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         GLES30.glEnable(GLES30.GL_DEPTH_TEST);
 
+        camera = new Camera(new Vector3(0,0,3.0f));
         
         texture = new Texture(assets,"Textures/container.jpg");
         cubemapTexutre = loadCubeMap(Data.files);
@@ -75,7 +77,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         loadSkybox();
         
         shader.use();
-        shader.setInt("texture1",0);
+        shader.setInt("skybox",0);
         
         skyboxShader.use();
         skyboxShader.setInt("skybox",0);
@@ -94,22 +96,22 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         Matrix.setIdentityM(view,0);
         Matrix.setIdentityM(projection,0);
         
-        view = lookAt(view,cameraPosition,cameraFront.add(cameraPosition),cameraUp);
+        Matrix.rotateM(model,0,time,0.6f,0.4f,0.1f);
+        view = camera.viewMatrix();
         Matrix.perspectiveM(projection,0,45.0f,(float)WIDTH/HEIGHT,.1f,100f);
 
         shader.use();
-        texture.bind(0);
         shader.setMatrix4f("model",model);
         shader.setMatrix4f("view",view);
         shader.setMatrix4f("projection",projection);
-        shader.setVec3f("cameraPos",view[index(3,0)],view[index(3,1)],view[index(3,2)]);
-        renderBox();
-        //renderSphere();
-//        skyboxShader.use();
-//        removeTranslation(view);
-//        skyboxShader.setMatrix4f("view", view);
-//        skyboxShader.setMatrix4f("projection", projection);
-//        renderSkybox();
+        shader.setVec3f("cameraPos",camera.position);
+        renderSphere();
+        
+        skyboxShader.use();
+        removeTranslation(view);
+        skyboxShader.setMatrix4f("view", view);
+        skyboxShader.setMatrix4f("projection", projection);
+        renderSkybox();
     }
     
     @Override
@@ -261,14 +263,14 @@ public class GLRenderer implements GLSurfaceView.Renderer {
             ArrayList<Float> data = new ArrayList<>();
             for (int i = 0; i < positions.size(); ++i)
             {
-                data.add(positions.get(i).data[0]);
-                data.add(positions.get(i).data[1]);
-                data.add(positions.get(i).data[2]);
+                data.add(positions.get(i).x);
+                data.add(positions.get(i).y);
+                data.add(positions.get(i).z);
                 if (normals.size() > 0)
                 {
-                    data.add(normals.get(i).data[0]);
-                    data.add(normals.get(i).data[1]);
-                    data.add(normals.get(i).data[2]);
+                    data.add(normals.get(i).x);
+                    data.add(normals.get(i).y);
+                    data.add(normals.get(i).z);
                 }
             }
             
@@ -305,37 +307,6 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         GLES30.glDrawElements(GLES30.GL_TRIANGLE_STRIP, indexCount, GLES30.GL_UNSIGNED_INT, 0);
     }
     
-    private float[] lookAt(float[] view,Vector3 position,Vector3 target,Vector3 worldUp){
-        float[] lhs = new float[4*4];
-        float[] rhs = new float[4*4];
-        
-        Matrix.setIdentityM(lhs,0);
-        Matrix.setIdentityM(rhs,0);
-        
-        Vector3 zaxis = position.subtract(target).normalize();
-        Vector3 xaxis = worldUp.normalize().cross(zaxis).normalize();
-        Vector3 yaxis = zaxis.cross(xaxis);
-        
-        rhs[index(3,0)] = -position.data[0];
-        rhs[index(3,1)] = -position.data[1];
-        rhs[index(3,2)] = -position.data[2];
-        
-        lhs[index(0,0)] = xaxis.data[0];
-        lhs[index(1,0)] = xaxis.data[1];
-        lhs[index(2,0)] = xaxis.data[2];
-        
-        lhs[index(0,1)] = yaxis.data[0];
-        lhs[index(1,1)] = yaxis.data[1];
-        lhs[index(2,1)] = yaxis.data[2];
-        
-        lhs[index(0,2)] = zaxis.data[0];
-        lhs[index(1,2)] = zaxis.data[1];
-        lhs[index(2,2)] = zaxis.data[2];
-        
-        Matrix.multiplyMM(view,0,lhs,0,rhs,0);
-        return view;
-    }
-    
     private static int sizeof(float[] data){
         return 4 * data.length;
     }
@@ -366,23 +337,22 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     }
     
     public void processMovement(Movement movement){
-        float movementSpeed = 3.0f * deltaTime;
         if(movement == Movement.FORWARD){
-            cameraPosition = cameraPosition.add(cameraFront.multiply(movementSpeed));
+            camera.processInput(Movement.FORWARD,deltaTime);
         }
         else if(movement == Movement.BACKWARD){
-            cameraPosition = cameraPosition.subtract(cameraFront.multiply(movementSpeed));
+            camera.processInput(Movement.BACKWARD,deltaTime);
         }
         else if(movement == Movement.LEFT){
-            cameraPosition = cameraPosition.subtract(
-                            cameraFront.cross(cameraUp).normalize()
-                            .multiply(movementSpeed));
+            camera.processInput(Movement.LEFT,deltaTime);
         }
         else if(movement == Movement.RIGHT){
-            cameraPosition = cameraPosition.add(
-                    cameraFront.cross(cameraUp).normalize()
-                            .multiply(movementSpeed));
+            camera.processInput(Movement.RIGHT,deltaTime);
         }
+    }
+    
+    public void processTouch(float dx,float dy){
+        camera.processTouch(dx,dy,true);
     }
     
     public float getAngle() {

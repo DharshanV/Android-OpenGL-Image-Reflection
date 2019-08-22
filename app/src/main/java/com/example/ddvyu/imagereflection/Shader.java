@@ -55,8 +55,9 @@ public class Shader extends Application {
         GLES30.glUniform1f(GLES30.glGetUniformLocation(programID,name),value);
     }
 
-    public void setVec3f(String name,float x,float y,float z){
-        GLES30.glUniform3f(GLES30.glGetUniformLocation(programID,name),x,y,z);
+    public void setVec3f(String name,Vector3 vector){
+        GLES30.glUniform3f(GLES30.glGetUniformLocation(programID,name),
+                vector.x,vector.y,vector.z);
     }
 
     private int loadShader(int type,String source){

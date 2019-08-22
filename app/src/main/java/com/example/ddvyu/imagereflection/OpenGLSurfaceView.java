@@ -33,7 +33,8 @@ public class OpenGLSurfaceView extends GLSurfaceView {
         renderer = new GLRenderer();
         setPreserveEGLContextOnPause(true);
         setRenderer(renderer);
-
+        previousX = (float)this.getResources().getDisplayMetrics().widthPixels /2;
+        previousX = (float)this.getResources().getDisplayMetrics().heightPixels /2;
     }
 
     public void setAssetManager(AssetManager manager){
@@ -55,18 +56,8 @@ public class OpenGLSurfaceView extends GLSurfaceView {
     
                 float dx = x - previousX;
                 float dy = y - previousY;
-    
-                // reverse direction of rotation above the mid-line
-                if (y > getHeight() / 2) {
-                    dx = dx * -1;
-                }
-    
-                // reverse direction of rotation to left of the mid-line
-                if (x < getWidth() / 2) {
-                    dy = dy * -1;
-                }
-    
-                renderer.setAngle(renderer.getAngle() + ((dx + dy) * TOUCH_SCALE_FACTOR));
+                
+                //renderer.processTouch(dx,dy);
             }
         }
         
@@ -74,11 +65,4 @@ public class OpenGLSurfaceView extends GLSurfaceView {
         previousY = y;
         return true;
     }
-}
-
-enum Movement{
-    FORWARD,
-    BACKWARD,
-    LEFT,
-    RIGHT
 }
