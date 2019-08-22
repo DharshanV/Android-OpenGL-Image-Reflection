@@ -29,8 +29,9 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     private AssetManager assets;
 
     private Camera camera;
-    private Shader shader;
-    private Texture texture;
+    private Shader sphereShader;
+    private Shader boxShader;
+    private Texture boxTexture;
     private Shader skyboxShader;
     private int cubemapTexutre;
     
@@ -48,17 +49,10 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     
     private float deltaTime;
     private float lastFrame;
-    private float zPosition = -3.0f;
-    private float mAngle;
-    private float rotateAngle;
-    
+
     private int sphereVAO[] = {0};
     private int indexCount;
     private boolean createSphere = true;
-    
-    private Vector3 cameraPosition = new Vector3(0,0,3.0f);
-    private Vector3 cameraFront = new Vector3(0,0,-1.0f);
-    private Vector3 cameraUp= new Vector3(0,1.0f,0);
     
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -66,18 +60,22 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         GLES30.glEnable(GLES30.GL_DEPTH_TEST);
 
         camera = new Camera(new Vector3(0,0,3.0f));
-        
-        texture = new Texture(assets,"Textures/container.jpg");
+    
+        boxTexture = new Texture(assets,"Textures/container.jpg");
         cubemapTexutre = loadCubeMap(Data.files);
         
-        shader = new Shader(assets,"Shaders/vertexShader.vert","Shaders/fragmentShader.frag");
-        skyboxShader = new Shader(assets,"Shaders/vertexSkybox.vert","Shaders/fragmentSkybox.frag");
+        boxShader = new Shader(assets,"Shaders/boxVertex.vert","Shaders/boxFragment.frag");
+        sphereShader = new Shader(assets,"Shaders/sphereVertex.vert","Shaders/sphereFragment.frag");
+        skyboxShader = new Shader(assets,"Shaders/skyboxVertex.vert","Shaders/skyboxFragment.frag");
         
         loadBox();
         loadSkybox();
         
-        shader.use();
-        shader.setInt("skybox",0);
+        boxShader.use();
+        boxShader.setInt("boxTexture",0);
+        
+        sphereShader.use();
+        sphereShader.setInt("skybox",0);
         
         skyboxShader.use();
         skyboxShader.setInt("skybox",0);
@@ -90,21 +88,30 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         float time = (float)SystemClock.elapsedRealtime()/1000;
         deltaTime = time - lastFrame;
         lastFrame = time;
-        time %= 60;
     
         Matrix.setIdentityM(model,0);
         Matrix.setIdentityM(view,0);
         Matrix.setIdentityM(projection,0);
         
-        Matrix.rotateM(model,0,time,0.6f,0.4f,0.1f);
         view = camera.viewMatrix();
         Matrix.perspectiveM(projection,0,45.0f,(float)WIDTH/HEIGHT,.1f,100f);
+    
+        boxShader.use();
+        boxTexture.bind(0);
+        Matrix.translateM(model,0,1.0f,.5f,0);
+        Matrix.rotateM(model,0,(float)SystemClock.uptimeMillis()/10,.3f,0.6f,0.4f);
+        boxShader.setMatrix4f("model",model);
+        boxShader.setMatrix4f("view",view);
+        boxShader.setMatrix4f("projection",projection);
+        renderBox();
 
-        shader.use();
-        shader.setMatrix4f("model",model);
-        shader.setMatrix4f("view",view);
-        shader.setMatrix4f("projection",projection);
-        shader.setVec3f("cameraPos",camera.position);
+        sphereShader.use();
+        Matrix.setIdentityM(model,0);
+        Matrix.translateM(model,0,-1.0f,0,0);
+        sphereShader.setMatrix4f("model",model);
+        sphereShader.setMatrix4f("view",view);
+        sphereShader.setMatrix4f("projection",projection);
+        sphereShader.setVec3f("cameraPos",camera.position);
         renderSphere();
         
         skyboxShader.use();
@@ -218,8 +225,8 @@ public class GLRenderer implements GLSurfaceView.Renderer {
             ArrayList<Vector3> positions = new ArrayList<>();
             ArrayList<Vector3> normals = new ArrayList<>();
             ArrayList<Integer> indices = new ArrayList<>();
-            final int X_SEGMENTS = 32;
-            final int Y_SEGMENTS = 32;
+            final int X_SEGMENTS = 25;
+            final int Y_SEGMENTS = 25;
             final float PI = 3.14159265359f;
             
             for (int y = 0; y <= Y_SEGMENTS; ++y)
@@ -353,14 +360,6 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     
     public void processTouch(float dx,float dy){
         camera.processTouch(dx,dy,true);
-    }
-    
-    public float getAngle() {
-        return mAngle;
-    }
-    
-    public void setAngle(float angle) {
-        mAngle = angle;
     }
 }
 

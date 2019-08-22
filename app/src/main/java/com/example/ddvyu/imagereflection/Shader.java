@@ -44,7 +44,7 @@ public class Shader extends Application {
             into.write(buf, 0, n);
         }
         into.close();
-        return new String(into.toByteArray(), "UTF-8"); // Or whatever encoding
+        return new String(into.toByteArray(), "UTF-8");
     }
 
     public void setMatrix4f(String name,float[] matrix){

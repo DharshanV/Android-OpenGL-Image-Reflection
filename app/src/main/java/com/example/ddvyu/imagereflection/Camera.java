@@ -1,6 +1,7 @@
 package com.example.ddvyu.imagereflection;
 
 import android.opengl.Matrix;
+import android.util.Log;
 
 enum Movement{
     FORWARD,
@@ -10,10 +11,11 @@ enum Movement{
 }
 
 public class Camera {
+    private static final String TAG = "Camera";
     final float YAW         = -90.0f;
     final float PITCH       =  0.0f;
-    final float SPEED       =  3f;
-    final float SENSITIVITY =  0.1f;
+    final float SPEED       =  10f;
+    final float SENSITIVITY =  0.4f;
     
     Vector3 position;
     Vector3 front;
@@ -47,7 +49,7 @@ public class Camera {
     }
     
     public void processInput(Movement movement,float deltaTime){
-        float movementSpeed = 3.0f * deltaTime;
+        movementSpeed = 3.0f * deltaTime;
         if(movement == Movement.FORWARD){
             position = position.add(front.multiply(movementSpeed));
         }
@@ -89,7 +91,7 @@ public class Camera {
         front.x = (float)Math.cos(Math.toRadians(yaw))*(float)Math.cos(Math.toRadians(pitch));
         front.y = (float)Math.sin(Math.toRadians(pitch));
         front.z = (float)Math.sin(Math.toRadians(yaw))*(float)Math.cos(Math.toRadians(pitch));
-        front = front.normalize();
+        this.front = front.normalize();
         
         right = front.cross(worldUp).normalize();
         up = right.cross(front).normalize();

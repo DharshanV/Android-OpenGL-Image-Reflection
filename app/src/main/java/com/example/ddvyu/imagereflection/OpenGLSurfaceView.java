@@ -14,10 +14,10 @@ public class OpenGLSurfaceView extends GLSurfaceView {
     private GLRenderer renderer;
     private AssetManager manager;
     private static String TAG = "Surfaceview";
-    private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
-    private float previousX;
-    private float previousY;
-    
+    private float lastX;
+    private float lastY;
+    private boolean firstRun;
+
     public OpenGLSurfaceView(Context context) {
         super(context);
         init();
@@ -33,8 +33,8 @@ public class OpenGLSurfaceView extends GLSurfaceView {
         renderer = new GLRenderer();
         setPreserveEGLContextOnPause(true);
         setRenderer(renderer);
-        previousX = (float)this.getResources().getDisplayMetrics().widthPixels /2;
-        previousX = (float)this.getResources().getDisplayMetrics().heightPixels /2;
+        lastX = (float)this.getResources().getDisplayMetrics().widthPixels /2;
+        lastY = (float)this.getResources().getDisplayMetrics().heightPixels /2;
     }
 
     public void setAssetManager(AssetManager manager){
@@ -48,21 +48,30 @@ public class OpenGLSurfaceView extends GLSurfaceView {
     
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        float x = e.getX();
-        float y = e.getY();
+        float x = e.getRawX();
+        float y = e.getRawY();
         
         switch (e.getAction()) {
             case MotionEvent.ACTION_MOVE: {
+                if(firstRun){
+                    lastX = x;
+                    lastY = y;
+                    firstRun = false;
+                }
     
-                float dx = x - previousX;
-                float dy = y - previousY;
-                
-                //renderer.processTouch(dx,dy);
+                float xoffset = x - lastX;
+                float yoffset = lastY - y;
+
+                lastX = x;
+                lastY = y;
+                renderer.processTouch(xoffset,yoffset);
+                break;
+            }
+            case MotionEvent.ACTION_UP:{
+                firstRun = true;
+                break;
             }
         }
-        
-        previousX = x;
-        previousY = y;
         return true;
     }
 }
