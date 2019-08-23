@@ -11,13 +11,14 @@ import android.widget.Button;
 import java.util.Map;
 
 public class OpenGLSurfaceView extends GLSurfaceView {
-    private GLRenderer renderer;
+    private MyRenderer renderer;
     private AssetManager manager;
     private static String TAG = "Surfaceview";
     private float lastX;
     private float lastY;
-    private boolean firstRun;
-
+    private boolean firstRun = true;
+    private boolean renderSampleScene = true;
+    
     public OpenGLSurfaceView(Context context) {
         super(context);
         init();
@@ -30,11 +31,19 @@ public class OpenGLSurfaceView extends GLSurfaceView {
 
     private void init(){
         setEGLContextClientVersion(2);
-        renderer = new GLRenderer();
         setPreserveEGLContextOnPause(true);
-        setRenderer(renderer);
         lastX = (float)this.getResources().getDisplayMetrics().widthPixels /2;
         lastY = (float)this.getResources().getDisplayMetrics().heightPixels /2;
+    }
+    
+    public void renderSample(Boolean doRenderSample){
+        if(doRenderSample){
+            renderer = new SampleGLRenderer();
+        }
+        else{
+            renderer = new ImageCubemapRenderer();
+        }
+        setRenderer(renderer);
     }
 
     public void setAssetManager(AssetManager manager){

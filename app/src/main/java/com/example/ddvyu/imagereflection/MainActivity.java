@@ -1,6 +1,7 @@
 package com.example.ddvyu.imagereflection;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
@@ -8,18 +9,21 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 
 public class MainActivity extends AppCompatActivity {
     public static String TAG = "Dharshan";
+    public static String RENDER_TYPE = "RENDERER";
     Camera camera = null;
     FrameLayout frameLayout;
     ShowCamera showCamera;
     Button takePictureButton;
     Button clearButton;
     Button renderButton;
+    Button sampleRenderButton;
 
     private static final int REQUEST_CAMERA_PERMISSION = 200;
     private boolean permissionGranted = false;
@@ -36,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         requestPermission();
 
         if(permissionGranted){
-            showPreview();
+            //showPreview();
         }
 
         takePictureButton = findViewById(R.id.takePictureButton);
@@ -47,12 +51,15 @@ public class MainActivity extends AppCompatActivity {
 
         clearButton = findViewById(R.id.clearButton);
         clearButton.setOnClickListener(clearButtonListener);
+    
+        sampleRenderButton = findViewById(R.id.sampleRenderButton);
+        sampleRenderButton.setOnClickListener(sampleButtonListener);
     }
 
     View.OnClickListener takePictureListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            showPreview();
+            //showPreview();
         }
     };
 
@@ -68,6 +75,13 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             clearPreviews();
+        }
+    };
+    
+    View.OnClickListener sampleButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            startSampleRender();
         }
     };
 
@@ -94,11 +108,19 @@ public class MainActivity extends AppCompatActivity {
             frameLayout.removeAllViews();
         }
         currentFace = 0;
-        showPreview();
+        //showPreview();
     }
 
+    public void startSampleRender(){
+        Intent intent = new Intent(this,OpenGLActivity.class);
+        intent.putExtra(RENDER_TYPE,true);
+        startActivity(intent);
+    }
+    
     public void startRenderActivity(){
-
+        Intent intent = new Intent(this,OpenGLActivity.class);
+        intent.putExtra(RENDER_TYPE,false);
+        startActivity(intent);
     }
 
     public boolean isCameraInUse() {
@@ -127,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
             case REQUEST_CAMERA_PERMISSION:{
                 if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     permissionGranted = true;
-                    showPreview();
+                    //showPreview();
                 }
                 else{
                     finish();

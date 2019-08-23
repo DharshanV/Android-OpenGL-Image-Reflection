@@ -11,26 +11,30 @@
         android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_margin="20dp"
-        android:text="Take Picture"
-        />
+        android:layout_alignParentEnd="true"
+        android:text="Take Picture" />
+
+    <Button
+        android:id="@+id/sampleRenderButton"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_above="@+id/takePictureButton"
+        android:layout_alignStart="@+id/takePictureButton"
+        android:text="Show sample" />
 
     <Button
         android:id="@+id/renderButton"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignTop="@+id/takePictureButton"
-        android:layout_marginEnd="150dp"
+        android:layout_alignParentBottom="true"
+        android:layout_toStartOf="@+id/takePictureButton"
         android:text="Render" />
 
     <Button
         android:id="@+id/clearButton"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignTop="@+id/takePictureButton"
-        android:layout_marginEnd="255dp"
+        android:layout_alignParentBottom="true"
+        android:layout_toStartOf="@+id/renderButton"
         android:text="Clear" />
 </RelativeLayout>

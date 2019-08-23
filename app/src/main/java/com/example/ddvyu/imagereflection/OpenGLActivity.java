@@ -1,6 +1,7 @@
 package com.example.ddvyu.imagereflection;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -22,7 +23,13 @@ public class OpenGLActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.opengl_activity);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        
+        Intent intent = getIntent();
+        boolean doRenderSample = intent.getBooleanExtra(MainActivity.RENDER_TYPE,true);
+        
+        
         glSurfaceView = findViewById(R.id.openGLSurfaceView);
+        glSurfaceView.renderSample(doRenderSample);
         glSurfaceView.setAssetManager(getAssets());
         
         findViewById(R.id.forwardButton).setOnTouchListener(eventListener);
