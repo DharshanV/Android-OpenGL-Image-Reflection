@@ -10,12 +10,15 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class OpenGLActivity extends Activity {
     private OpenGLSurfaceView glSurfaceView;
-    private static final String TAG = "MAIN";
+    private static final String TAG = "OpenGL";
     private Map<Integer,Movement> movementMap;
     
     @Override
@@ -23,13 +26,17 @@ public class OpenGLActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.opengl_activity);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        glSurfaceView = findViewById(R.id.openGLSurfaceView);
         
         Intent intent = getIntent();
-        boolean doRenderSample = intent.getBooleanExtra(MainActivity.RENDER_TYPE,true);
+        int total = intent.getIntExtra("count",0);
+        if(total == 0){
+            glSurfaceView.renderSample();
+        }
+        else{
+            glSurfaceView.renderCubemap(intent.getStringExtra("path"));
+        }
         
-        
-        glSurfaceView = findViewById(R.id.openGLSurfaceView);
-        glSurfaceView.renderSample(doRenderSample);
         glSurfaceView.setAssetManager(getAssets());
         
         findViewById(R.id.forwardButton).setOnTouchListener(eventListener);

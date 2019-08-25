@@ -16,7 +16,9 @@ import java.io.InputStream;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -28,6 +30,8 @@ public class ImageCubemapRenderer extends MyRenderer {
     private Camera camera;
     private Shader sphereShader;
     private Shader skyboxShader;
+    private Shader boxShader;
+    private Texture boxTexture;
     private int cubemapTexutre;
     
     private int WIDTH;
@@ -37,6 +41,8 @@ public class ImageCubemapRenderer extends MyRenderer {
     private float[] view = new float[4*4];
     private float[] projection = new float[4*4];
     
+    private int VAO[] = {0};
+    private int VBO[] = {0};
     private int VAOSkybox[] = {0};
     private int VBOSkybox[] = {0};
     
@@ -46,20 +52,41 @@ public class ImageCubemapRenderer extends MyRenderer {
     private int sphereVAO[] = {0};
     private int indexCount;
     private boolean createSphere = true;
+    private String rootPath;
+    private Map<String,Integer> indexToFace;
+    
+    public ImageCubemapRenderer(String path){
+        rootPath = path;
+        indexToFace = new HashMap<>();
+        indexToFace.put("left",5);
+        indexToFace.put("right",1);
+        
+        
+        indexToFace.put("front",4);
+        indexToFace.put("back",0);
+    
+        indexToFace.put("top",2);
+        indexToFace.put("bottom",3);
+    }
     
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES30.glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         GLES30.glEnable(GLES30.GL_DEPTH_TEST);
-        
+    
+        boxTexture = new Texture(assets,"Textures/container.jpg");
+        cubemapTexutre = loadCubeMap(rootPath);
         camera = new Camera(new Vector3(0,0,3.0f));
-
-        cubemapTexutre = loadCubeMap(Data.files);
-
+    
+        boxShader = new Shader(assets,"Shaders/boxVertex.vert","Shaders/boxFragment.frag");
         sphereShader = new Shader(assets,"Shaders/sphereVertex.vert","Shaders/sphereFragment.frag");
         skyboxShader = new Shader(assets,"Shaders/skyboxVertex.vert","Shaders/skyboxFragment.frag");
-        
+    
+        loadBox();
         loadSkybox();
+    
+        boxShader.use();
+        boxShader.setInt("boxTexture",0);
         
         sphereShader.use();
         sphereShader.setInt("skybox",0);
@@ -71,32 +98,84 @@ public class ImageCubemapRenderer extends MyRenderer {
     @Override
     public void onDrawFrame(GL10 gl) {
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
-        
-        float time = (float) SystemClock.elapsedRealtime()/1000;
+    
+        float time = (float)SystemClock.elapsedRealtime()/1000;
         deltaTime = time - lastFrame;
         lastFrame = time;
-        
+    
         Matrix.setIdentityM(model,0);
         Matrix.setIdentityM(view,0);
         Matrix.setIdentityM(projection,0);
-        
+    
         view = camera.viewMatrix();
         Matrix.perspectiveM(projection,0,45.0f,(float)WIDTH/HEIGHT,.1f,100f);
-        
-        sphereShader.use();
-        Matrix.setIdentityM(model,0);
-        Matrix.translateM(model,0,-1.0f,0,0);
-        sphereShader.setMatrix4f("model",model);
-        sphereShader.setMatrix4f("view",view);
-        sphereShader.setMatrix4f("projection",projection);
-        sphereShader.setVec3f("cameraPos",camera.position);
-        renderSphere();
-        
+    
+        boxShader.use();
+        boxTexture.bind(0);
+        Matrix.translateM(model,0,1.0f,.5f,0);
+        Matrix.rotateM(model,0,(float)SystemClock.uptimeMillis()/10,.3f,0.6f,0.4f);
+        boxShader.setMatrix4f("model",model);
+        boxShader.setMatrix4f("view",view);
+        boxShader.setMatrix4f("projection",projection);
+        renderBox();
+    
         skyboxShader.use();
         removeTranslation(view);
         skyboxShader.setMatrix4f("view", view);
         skyboxShader.setMatrix4f("projection", projection);
         renderSkybox();
+//        float time = (float) SystemClock.elapsedRealtime()/1000;
+//        deltaTime = time - lastFrame;
+//        lastFrame = time;
+//
+//        Matrix.setIdentityM(model,0);
+//        Matrix.setIdentityM(view,0);
+//        Matrix.setIdentityM(projection,0);
+//
+//        view = camera.viewMatrix();
+//        Matrix.perspectiveM(projection,0,45.0f,(float)WIDTH/HEIGHT,.1f,100f);
+//
+//        sphereShader.use();
+//        Matrix.setIdentityM(model,0);
+//        Matrix.translateM(model,0,-1.0f,0,0);
+//        sphereShader.setMatrix4f("model",model);
+//        sphereShader.setMatrix4f("view",view);
+//        sphereShader.setMatrix4f("projection",projection);
+//        sphereShader.setVec3f("cameraPos",camera.position);
+//        renderSphere();
+//
+//        skyboxShader.use();
+//        removeTranslation(view);
+//        skyboxShader.setMatrix4f("view", view);
+//        skyboxShader.setMatrix4f("projection", projection);
+//        renderSkybox();
+    }
+    
+    
+    private void loadBox() {
+        FloatBuffer verticesBuffer = null;
+        verticesBuffer = verticesBuffer.wrap(Data.vertices);
+        
+        GLES30.glGenVertexArrays(1,VAO,0);
+        GLES30.glGenBuffers(1,VBO,0);
+        
+        GLES30.glBindVertexArray(VAO[0]);
+        
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER,VBO[0]);
+        GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER,sizeof(Data.vertices),verticesBuffer,GLES30.GL_STATIC_DRAW);
+        
+        GLES30.glEnableVertexAttribArray(0);
+        GLES30.glVertexAttribPointer(0,3,GLES30.GL_FLOAT,false,8*4,0);
+        GLES30.glEnableVertexAttribArray(1);
+        GLES30.glVertexAttribPointer(1,3,GLES30.GL_FLOAT,false,8*4,3*4);
+        GLES30.glEnableVertexAttribArray(2);
+        GLES30.glVertexAttribPointer(2,2,GLES30.GL_FLOAT,false,8*4,6*4);
+    }
+    
+    private void renderBox(){
+        GLES30.glBindVertexArray(VAO[0]);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES,0,36);
+        GLES30.glBindVertexArray(0);
     }
     
     @Override
@@ -126,24 +205,23 @@ public class ImageCubemapRenderer extends MyRenderer {
         GLES30.glVertexAttribPointer(0,3,GLES30.GL_FLOAT,false,3*4,0);
     }
     
-    private int loadCubeMap(List<String> facesPath){
+    private int loadCubeMap(String path){
         int[] textureID = {0};
         GLES30.glGenTextures(1,textureID,0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_CUBE_MAP,textureID[0]);
         
-        for(int i=0;i<facesPath.size();i++){
-            Bitmap bitmap = null;
-            try{
-                InputStream stream = assets.open(facesPath.get(i));
-                bitmap = BitmapFactory.decodeStream(stream);
-            } catch (IOException e){
-                e.printStackTrace();
-            }
-            
-            GLUtils.texImage2D(GLES30.GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,0,bitmap,0);
-            
-            bitmap.recycle();
-        }
+        int i = indexToFace.get("right");
+        loadBitmap(i);
+        i = indexToFace.get("left");
+        loadBitmap(i);
+        i = indexToFace.get("top");
+        loadBitmap(i);
+        i = indexToFace.get("bottom");
+        loadBitmap(i);
+        i = indexToFace.get("front");
+        loadBitmap(i);
+        i = indexToFace.get("back");
+        loadBitmap(i);
         
         GLES30.glTexParameteri(GLES30.GL_TEXTURE_CUBE_MAP, GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
         GLES30.glTexParameteri(GLES30.GL_TEXTURE_CUBE_MAP, GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
@@ -152,6 +230,15 @@ public class ImageCubemapRenderer extends MyRenderer {
         GLES30.glTexParameteri(GLES30.GL_TEXTURE_CUBE_MAP, GLES30.GL_TEXTURE_WRAP_R, GLES30.GL_CLAMP_TO_EDGE);
         
         return textureID[0];
+    }
+    
+    private void loadBitmap(int i){
+        Log.i(TAG,String.valueOf(i));
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        Bitmap bitmap = BitmapFactory.decodeFile(rootPath+"/image"+String.valueOf(i)+".jpg", options);
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,0,bitmap,0);
+        bitmap.recycle();
     }
     
     private void renderSkybox(){

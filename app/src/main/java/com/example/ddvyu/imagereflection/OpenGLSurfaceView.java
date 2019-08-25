@@ -8,6 +8,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+
+import java.util.List;
 import java.util.Map;
 
 public class OpenGLSurfaceView extends GLSurfaceView {
@@ -36,13 +38,13 @@ public class OpenGLSurfaceView extends GLSurfaceView {
         lastY = (float)this.getResources().getDisplayMetrics().heightPixels /2;
     }
     
-    public void renderSample(Boolean doRenderSample){
-        if(doRenderSample){
-            renderer = new SampleGLRenderer();
-        }
-        else{
-            renderer = new ImageCubemapRenderer();
-        }
+    public void renderSample(){
+        renderer = new SampleGLRenderer();
+        setRenderer(renderer);
+    }
+    
+    public void renderCubemap(String path){
+        renderer = new ImageCubemapRenderer(path);
         setRenderer(renderer);
     }
 
